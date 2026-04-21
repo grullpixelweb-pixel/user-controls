@@ -200,3 +200,65 @@ describe('AuthGuard', () => {
   });
 });
 ```
+
+---
+
+# Integración de GraphQL
+
+Se ha añadido soporte para GraphQL, permitiendo consultas más flexibles.
+
+## Beneficios
+- **Consultas personalizadas**: Pide solo los campos que necesitas.
+- **Auto-documentación**: Esquema generado automáticamente en `src/schema.gql`.
+
+## Cómo probar
+1. Asegúrate de que el servidor esté corriendo: `npm run start:dev`.
+2. Ve a [http://localhost:3000/graphql](http://localhost:3000/graphql) en tu navegador.
+3. Prueba la siguiente **Query**:
+   ```graphql
+   query {
+     users {
+       id
+       name
+       email
+     }
+   }
+   ```
+4. Prueba la siguiente **Mutation**:
+   ```graphql
+   mutation {
+     createUser(name: "GQL Admin", email: "admin@gql.com") {
+       id
+       name
+     }
+   }
+   ```
+
+
+Cómo probar GraphQL
+NestJS con el driver de Apollo incluye una herramienta visual llamada Apollo Sandbox para probar tus consultas.
+
+1. Acceder al Playground
+Sube el servidor: npm run start:dev
+Abre tu navegador en: http://localhost:3000/graphql
+2. Ejecutar Consultas (Queries)
+Pega esto en el editor de la izquierda para obtener todos los usuarios:
+
+graphql
+query {
+  users {
+    id
+    name
+    email
+  }
+}
+3. Ejecutar Mutaciones (Mutations)
+Pega esto para crear un nuevo usuario:
+
+graphql
+mutation {
+  createUser(name: "GraphQL User", email: "gql@example.com") {
+    id
+    name
+  }
+}
