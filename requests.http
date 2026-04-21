@@ -1,13 +1,27 @@
 @baseUrl = http://localhost:3000
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiWm9kZGUiLCJlbWFpbCI6InpvZGRlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzc2Nzc4NDQzLCJleHAiOjE3NzY3ODIwNDN9.myMRy7_-1kCYunos0brnKR0tW_VI1oIv2Qm5ESRiVqQ
 
-### Obtener todos los usuarios
-GET {{baseUrl}}/users
-
-### Crear un nuevo usuario
+### 1. Crear un nuevo usuario (Público)
+# Ejecuta esto primero para tener un usuario en la DB
 POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-    "name": "Zodde",
-    "email": "zodde@example.com"
+    "name": "Daniela",
+    "email": "daniela@example.com"
 }
+
+### 2. Login (Obtener Token)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "daniela@example.com"
+}
+
+### 3. Obtener todos los usuarios (Protegido)
+# Requiere el token obtenido en el paso anterior
+GET {{baseUrl}}/users
+Authorization: Bearer {{authToken}}
+

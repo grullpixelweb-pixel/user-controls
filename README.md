@@ -85,3 +85,118 @@ crea un archivo requer.http para ejecutar en mi editor el codigo con REST API
 Probar la API:
 POST /users: Cuerpos JSON como {"name": "Zodde", "email": "zodde@example.com"}.
 GET /users: Devuelve la lista completa de usuarios creados.
+
+
+
+
+# Cómo probar la Autenticación JWT
+
+Has implementado un sistema de autenticación básico. Aquí te explico cómo probarlo paso a paso usando herramientas como Postman, Insomnia o `curl`.
+
+## 1. Preparación de los Endpoints
+
+Asegúrate de que tu servidor esté corriendo:
+```bash
+npm run start:dev
+```
+
+### Endpoints disponibles:
+- `POST /users`: Crear un usuario (público)
+- `POST /auth/login`: Obtener el token JWT (público)
+- `GET /users`: Listar usuarios (protegido con JWT)
+
+---
+
+## 2. Flujo de Prueba
+
+### Paso A: Crear un usuario
+Como todavía no tienes usuarios en la base de datos (o para probar uno nuevo), crea uno primero.
+
+**Request:**
+- **URL:** `http://localhost:3000/users`
+- **Method:** `POST`
+- **Body (JSON):**
+  ```json
+  {
+    "name": "Juan Sanz",
+    "email": "juan@example.com"
+  }
+  ```
+
+### Paso B: Iniciar Sesión (Obtener el Token)
+Usa el email del usuario creado para obtener tu Token.
+
+**Request:**
+- **URL:** `http://localhost:3000/auth/login`
+- **Method:** `POST`
+- **Body (JSON):**
+  ```json
+  {
+    "email": "juan@example.com"
+  }
+  ```
+
+**Response:**
+Recibirás un objeto con el `access_token`. **Cópialo**.
+
+### Paso C: Acceder a la ruta protegida
+Intenta acceder a la lista de usuarios.
+
+**Intento 1: Sin Token (Debe fallar)**
+- **URL:** `http://localhost:3000/users`
+- **Method:** `GET`
+- **Resultado esperado:** `401 Unauthorized`
+
+**Intento 2: Con Token (Debe funcionar)**
+- **URL:** `http://localhost:3000/users`
+- **Method:** `GET`
+- **Headers:** 
+  - `Authorization`: `Bearer TU_TOKEN_AQUI`
+- **Resultado esperado:** Lista de usuarios en JSON.
+
+---
+
+## 3. Pruebas Unitarias (AuthGuard)
+
+Si quieres probar el `AuthGuard` de forma automatizada, puedes crear un archivo `.spec.ts». Aquí tienes un ejemplo de cómo se vería la lógica central en Jest:
+
+```typescript
+import { AuthGuard } from './auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { ExecutionContext } from '@nestjs/common';
+
+describe('AuthGuard', () => {
+  let guard: AuthGuard;
+  let jwtService: JwtService;
+
+  beforeEach(() => {
+    jwtService = new JwtService({ secret: 'superSecretKey' });
+    guard = new AuthGuard(jwtService);
+  });
+
+  it('should return true when token is valid', async () => {
+    const token = jwtService.sign({ sub: 1 });
+    const context = {
+      switchToHttp: () => ({
+        getRequest: () => ({
+          headers: { authorization: `Bearer ${token}` }
+        })
+      })
+    } as ExecutionContext;
+
+    expect(await guard.canActivate(context)).toBe(true);
+  });
+
+  it('should return false or throw when token is missing', async () => {
+    const context = {
+      switchToHttp: () => ({
+        getRequest: () => ({
+          headers: {}
+        })
+      })
+    } as ExecutionContext;
+
+    await expect(guard.canActivate(context)).rejects.toThrow();
+  });
+});
+```
